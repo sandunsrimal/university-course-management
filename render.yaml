@@ -4,13 +4,13 @@ databases:
     plan: free
 
 services:
-  # Backend API Service
+  # Backend API Service (Docker-based since Render doesn't support native Java)
   - type: web
     name: university-backend
-    env: java
+    runtime: docker
     plan: free
-    buildCommand: cd backend && ./gradlew build -x test
-    startCommand: cd backend && java -jar build/libs/*.jar
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
@@ -41,7 +41,7 @@ services:
   # Frontend Web Service
   - type: web
     name: university-frontend
-    env: node
+    runtime: node
     plan: free
     buildCommand: cd frontend && npm install && npm run build
     startCommand: cd frontend && npm start
