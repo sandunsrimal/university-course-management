@@ -27,7 +27,7 @@ public class CourseContent {
     @Column(nullable = false)
     private ContentType contentType;
     
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String content; // For text content, HTML, or file paths
     
     @Size(max = 255)
