@@ -254,6 +254,16 @@ public class CourseService {
                 .collect(Collectors.toList());
     }
     
+    public boolean isStudentEnrolledInCourse(Long studentId, Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+        
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+        
+        return course.getEnrolledStudents().contains(student);
+    }
+    
     // ================================
     // ENROLLMENT MANAGEMENT
     // ================================

@@ -67,7 +67,7 @@ public class StudentController {
     public ResponseEntity<?> getMyEnrolledCourses() {
         try {
             Long studentId = getCurrentStudentId();
-            List<CourseResponse> courses = courseService.getCoursesByStudent(studentId);
+            List<CourseResponse> courses = courseService.getCoursesForStudent(studentId);
             return ResponseEntity.ok(courses);
         } catch (RuntimeException e) {
             System.out.println("❌ Error in getMyEnrolledCourses: " + e.getMessage());
@@ -78,7 +78,7 @@ public class StudentController {
     @GetMapping("/courses/available")
     public ResponseEntity<?> getAvailableCourses() {
         try {
-            List<CourseResponse> courses = courseService.getAvailableCourses();
+            List<CourseResponse> courses = courseService.getCoursesWithOpenEnrollment();
             return ResponseEntity.ok(courses);
         } catch (RuntimeException e) {
             System.out.println("❌ Error in getAvailableCourses: " + e.getMessage());
@@ -90,7 +90,7 @@ public class StudentController {
     public ResponseEntity<?> enrollInCourse(@PathVariable Long courseId) {
         try {
             Long studentId = getCurrentStudentId();
-            courseService.enrollStudentInCourse(courseId, studentId);
+            courseService.enrollStudent(courseId, studentId);
             return ResponseEntity.ok(new MessageResponse("Successfully enrolled in course"));
         } catch (RuntimeException e) {
             System.out.println("❌ Error in enrollInCourse: " + e.getMessage());

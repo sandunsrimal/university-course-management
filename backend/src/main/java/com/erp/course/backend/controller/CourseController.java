@@ -347,7 +347,7 @@ public class CourseController {
         User user = (User) authentication.getPrincipal();
         
         // Find the student record associated with this user's email
-        Student student = studentService.getStudentByEmail(user.getEmail());
+        StudentResponse student = studentService.getStudentByEmail(user.getEmail());
         
         if (student == null) {
             throw new RuntimeException("Student record not found for user: " + user.getEmail());

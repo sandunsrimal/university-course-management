@@ -51,8 +51,9 @@ public class StudentService {
                 .map(this::convertToResponse);
     }
     
-    public Student getStudentByEmail(String email) {
+    public StudentResponse getStudentByEmail(String email) {
         return studentRepository.findByEmail(email)
+                .map(this::convertToResponse)
                 .orElse(null);
     }
     
