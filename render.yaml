@@ -1,0 +1,50 @@
+databases:
+  - name: university-mysql
+    databaseName: university
+    plan: free
+
+services:
+  # Backend API Service
+  - type: web
+    name: university-backend
+    env: java
+    plan: free
+    buildCommand: cd backend && ./gradlew build -x test
+    startCommand: cd backend && java -jar build/libs/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: MYSQL_USER
+        fromDatabase:
+          name: university-mysql
+          property: user
+      - key: MYSQL_PASSWORD
+        fromDatabase:
+          name: university-mysql
+          property: password
+      - key: MYSQL_HOST
+        fromDatabase:
+          name: university-mysql
+          property: host
+      - key: MYSQL_PORT
+        fromDatabase:
+          name: university-mysql
+          property: port
+      - key: MYSQL_DATABASE
+        fromDatabase:
+          name: university-mysql
+          property: database
+      - key: JWT_SECRET
+        generateValue: true
+    healthCheckPath: /actuator/health
+
+  # Frontend Web Service
+  - type: web
+    name: university-frontend
+    env: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://university-backend.onrender.com 
