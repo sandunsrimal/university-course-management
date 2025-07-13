@@ -11,6 +11,8 @@ services:
     plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
+    dependsOn:
+      - university-mysql
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
