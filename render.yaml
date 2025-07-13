@@ -1,5 +1,5 @@
 databases:
-  - name: university-mysql
+  - name: university-postgres
     databaseName: university
     plan: free
 
@@ -12,29 +12,29 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     dependsOn:
-      - university-mysql
+      - university-postgres
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
       - key: MYSQL_USER
         fromDatabase:
-          name: university-mysql
+          name: university-postgres
           property: user
       - key: MYSQL_PASSWORD
         fromDatabase:
-          name: university-mysql
+          name: university-postgres
           property: password
       - key: MYSQL_HOST
         fromDatabase:
-          name: university-mysql
+          name: university-postgres
           property: host
       - key: MYSQL_PORT
         fromDatabase:
-          name: university-mysql
+          name: university-postgres
           property: port
       - key: MYSQL_DATABASE
         fromDatabase:
-          name: university-mysql
+          name: university-postgres
           property: database
       - key: JWT_SECRET
         generateValue: true
