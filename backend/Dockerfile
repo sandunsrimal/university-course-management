@@ -25,5 +25,5 @@ RUN ./gradlew build -x test --no-daemon
 # Expose port (Render will set PORT environment variable)
 EXPOSE 8080
 
-# Run the application using shell to expand wildcard
-CMD ["sh", "-c", "java -jar build/libs/*.jar"] 
+# Run the application using the correct JAR file name
+CMD ["java", "-jar", "build/libs/backend-0.0.1-SNAPSHOT.jar"] 
