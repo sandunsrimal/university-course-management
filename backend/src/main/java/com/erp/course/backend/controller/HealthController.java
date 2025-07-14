@@ -117,6 +117,40 @@ public class HealthController {
             response.put("error", e.getMessage());
             response.put("stackTrace", e.getStackTrace()[0].toString());
         }
+                 return ResponseEntity.ok(response);
+    }
+
+    // Debug endpoint to check user details and password encoding
+    @GetMapping("/debug/user-details")
+    public ResponseEntity<Map<String, Object>> getUserDetails() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Check admin user details
+            if (userRepository.existsByUsername("admin")) {
+                com.erp.course.backend.entity.User admin = userRepository.findByUsernameAndIsActiveTrue("admin").orElse(null);
+                if (admin != null) {
+                    Map<String, Object> adminDetails = new HashMap<>();
+                    adminDetails.put("username", admin.getUsername());
+                    adminDetails.put("email", admin.getEmail());
+                    adminDetails.put("role", admin.getRole().toString());
+                    adminDetails.put("isActive", admin.getIsActive());
+                    adminDetails.put("passwordLength", admin.getPassword().length());
+                    adminDetails.put("passwordStartsWith", admin.getPassword().substring(0, Math.min(10, admin.getPassword().length())));
+                    adminDetails.put("passwordMatches", passwordEncoder.matches("admin123", admin.getPassword()));
+                    response.put("adminDetails", adminDetails);
+                } else {
+                    response.put("adminDetails", "User exists but not found when querying");
+                }
+            } else {
+                response.put("adminDetails", "Admin user does not exist");
+            }
+
+            response.put("status", "SUCCESS");
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+            response.put("stackTrace", java.util.Arrays.toString(e.getStackTrace()));
+        }
         return ResponseEntity.ok(response);
     }
 } 
