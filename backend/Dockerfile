@@ -26,8 +26,8 @@ RUN ./gradlew build -x test --no-daemon
 COPY wait-for-db.sh .
 RUN chmod +x wait-for-db.sh
 
-# Expose port (Render will set PORT environment variable)
-EXPOSE 8080
+# Expose port - Render will set PORT environment variable dynamically
+EXPOSE 10000
 
 # Run the wait script which will start the application when database is ready
 CMD ["./wait-for-db.sh"] 

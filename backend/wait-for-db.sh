@@ -49,7 +49,14 @@ echo "MYSQL_PORT: $MYSQL_PORT"
 echo "MYSQL_DATABASE: $MYSQL_DATABASE"
 echo "MYSQL_USER: $MYSQL_USER"
 echo "SPRING_PROFILES_ACTIVE: $SPRING_PROFILES_ACTIVE"
+echo "PORT: ${PORT:-10000}"
 echo "Database Type: PostgreSQL"
+
+# Ensure PORT environment variable is set (Render should provide this)
+if [ -z "$PORT" ]; then
+    echo "WARNING: PORT environment variable not set by Render. Using default 10000."
+    export PORT=10000
+fi
 
 # Start the Spring Boot application
 exec java -jar build/libs/backend-0.0.1-SNAPSHOT.jar 
