@@ -23,7 +23,7 @@ COPY src src
 RUN ./gradlew build -x test --no-daemon
 
 # Expose port (Render will set PORT environment variable)
-EXPOSE $PORT
+EXPOSE 10000
 
-# Run the application
-CMD ["java", "-Xmx512m", "-Xms256m", "-XX:+UseG1GC", "-jar", "build/libs/backend-0.0.1-SNAPSHOT.jar"] 
+# Run the application with memory-optimized settings for free tier
+CMD ["java", "-Xmx256m", "-Xms128m", "-XX:+UseSerialGC", "-XX:MaxMetaspaceSize=128m", "-Dserver.port=${PORT}", "-jar", "build/libs/backend-0.0.1-SNAPSHOT.jar"] 
