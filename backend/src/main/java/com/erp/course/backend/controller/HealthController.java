@@ -220,4 +220,54 @@ public class HealthController {
         }
         return ResponseEntity.ok(response);
     }
+
+    // PROPER FIX: Recreate users exactly like DataSeeder
+    @GetMapping("/debug/recreate-users")
+    public ResponseEntity<Map<String, Object>> recreateUsers() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Delete existing users first
+            userRepository.deleteAll();
+            
+            // Create admin user exactly like DataSeeder
+            com.erp.course.backend.entity.User admin = new com.erp.course.backend.entity.User();
+            admin.setUsername("admin");
+            admin.setFirstName("System");
+            admin.setLastName("Administrator");
+            admin.setEmail("admin@university.edu");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole(com.erp.course.backend.entity.Role.ADMIN);
+            userRepository.save(admin);
+            
+            // Create instructor user exactly like DataSeeder
+            com.erp.course.backend.entity.User instructor = new com.erp.course.backend.entity.User();
+            instructor.setUsername("instructor");
+            instructor.setFirstName("John");
+            instructor.setLastName("Smith");
+            instructor.setEmail("instructor@university.edu");
+            instructor.setPassword(passwordEncoder.encode("instructor123"));
+            instructor.setRole(com.erp.course.backend.entity.Role.INSTRUCTOR);
+            userRepository.save(instructor);
+            
+            // Create student user exactly like DataSeeder
+            com.erp.course.backend.entity.User student = new com.erp.course.backend.entity.User();
+            student.setUsername("student");
+            student.setFirstName("Jane");
+            student.setLastName("Doe");
+            student.setEmail("student@university.edu");
+            student.setPassword(passwordEncoder.encode("student123"));
+            student.setRole(com.erp.course.backend.entity.Role.STUDENT);
+            userRepository.save(student);
+            
+            response.put("usersRecreated", 3);
+            response.put("totalUsers", userRepository.count());
+            response.put("status", "SUCCESS");
+            response.put("message", "Users recreated exactly like DataSeeder");
+            
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
 } 
