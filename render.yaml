@@ -38,8 +38,8 @@ services:
           property: database
       - key: JWT_SECRET
         generateValue: true
-    healthCheckPath: /actuator/health
-
+    healthCheckPath: /health
+    
   # Frontend Web Service
   - type: web
     name: university-frontend
