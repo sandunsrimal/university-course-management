@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Wait for database to be ready
-echo "Waiting for PostgreSQL database to be ready..."
+# Wait for database to be ready on Render
+echo "Waiting for database to be ready..."
 
 # Maximum wait time in seconds (5 minutes)
 MAX_WAIT=300
@@ -15,7 +15,7 @@ fi
 
 # Function to check if database is ready
 check_db() {
-    echo "Checking PostgreSQL database connection at $MYSQL_HOST:$MYSQL_PORT..."
+    echo "Checking database connection at $MYSQL_HOST:$MYSQL_PORT..."
     
     # Use netcat to check if the database port is open
     nc -z -w5 "$MYSQL_HOST" "$MYSQL_PORT" 2>/dev/null
@@ -25,21 +25,21 @@ check_db() {
 # Wait for database to be ready
 while [ $WAIT_TIME -lt $MAX_WAIT ]; do
     if check_db; then
-        echo "PostgreSQL database port is open! Waiting additional 10 seconds for database to be fully ready..."
+        echo "Database port is open! Waiting additional 10 seconds for database to be fully ready..."
         sleep 10
-        echo "PostgreSQL database should be ready now!"
+        echo "Database should be ready now!"
         break
     else
-        echo "PostgreSQL database not ready yet. Waiting 10 seconds... ($WAIT_TIME/$MAX_WAIT)"
+        echo "Database not ready yet. Waiting 10 seconds... ($WAIT_TIME/$MAX_WAIT)"
         sleep 10
         WAIT_TIME=$((WAIT_TIME + 10))
     fi
 done
 
 if [ $WAIT_TIME -ge $MAX_WAIT ]; then
-    echo "PostgreSQL database was not ready within $MAX_WAIT seconds. Starting application anyway..."
+    echo "Database was not ready within $MAX_WAIT seconds. Starting application anyway..."
 else
-    echo "PostgreSQL database is ready. Starting application..."
+    echo "Database is ready. Starting application..."
 fi
 
 # Print environment variables for debugging (without sensitive info)
@@ -50,13 +50,12 @@ echo "MYSQL_DATABASE: $MYSQL_DATABASE"
 echo "MYSQL_USER: $MYSQL_USER"
 echo "SPRING_PROFILES_ACTIVE: $SPRING_PROFILES_ACTIVE"
 echo "PORT: ${PORT:-10000}"
-echo "Database Type: PostgreSQL"
 
-# Ensure PORT environment variable is set (Render should provide this)
+# Ensure PORT environment variable is set (Render provides this)
 if [ -z "$PORT" ]; then
     echo "WARNING: PORT environment variable not set by Render. Using default 10000."
     export PORT=10000
 fi
 
-# Start the Spring Boot application
-exec java -jar build/libs/backend-0.0.1-SNAPSHOT.jar 
+# Start the Spring Boot application with optimized JVM settings
+exec java -Xmx512m -Xms256m -XX:+UseG1GC -XX:+UseStringDeduplication -Dserver.port=${PORT:-10000} -jar build/libs/backend-0.0.1-SNAPSHOT.jar 

@@ -38,7 +38,8 @@ services:
           property: database
       - key: JWT_SECRET
         generateValue: true
-    healthCheckPath: /health
+    healthCheckPath: /actuator/health
+    startCommand: ./wait-for-db.sh
     
   # Frontend Web Service
   - type: web
