@@ -186,8 +186,66 @@ public class StudentController {
     }
     
     // ================================
+    // STATISTICS ENDPOINTS
+    // ================================
+    
+    @GetMapping("/statistics")
+    public ResponseEntity<?> getMyStatistics() {
+        try {
+            Long studentId = getCurrentStudentId();
+            StudentResponse profile = studentService.getStudentByIdOrThrow(studentId);
+            List<CourseResponse> enrolledCourses = courseService.getCoursesForStudent(studentId);
+            List<ResultResponse> results = resultService.getReleasedResultsByStudent(studentId);
+            Double averageResult = resultService.getAverageResultForStudent(studentId);
+            
+            Map<String, Object> statistics = new HashMap<>();
+            
+            // Student profile info
+            statistics.put("studentId", profile.getStudentId());
+            statistics.put("fullName", profile.getFullName());
+            statistics.put("major", profile.getMajor());
+            statistics.put("year", profile.getYear());
+            statistics.put("gpa", profile.getGpa());
+            statistics.put("status", profile.getStatus());
+            
+            // Course statistics
+            statistics.put("totalEnrolledCourses", enrolledCourses.size());
+            statistics.put("enrolledCourses", enrolledCourses);
+            
+            // Academic performance
+            statistics.put("totalResults", results.size());
+            statistics.put("averageResult", averageResult != null ? averageResult : 0.0);
+            
+            // Progress tracking
+            statistics.put("enrollmentDate", profile.getEnrollmentDate());
+            statistics.put("graduationDate", profile.getGraduationDate());
+            statistics.put("currentSemester", getCurrentSemester());
+            
+            return ResponseEntity.ok(statistics);
+        } catch (RuntimeException e) {
+            System.out.println("❌ Error in getMyStatistics: " + e.getMessage());
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
+    
+    // ================================
     // UTILITY METHODS
     // ================================
+    
+    private String getCurrentSemester() {
+        // Simple semester calculation based on current date
+        java.time.LocalDate now = java.time.LocalDate.now();
+        int month = now.getMonthValue();
+        int year = now.getYear();
+        
+        if (month >= 1 && month <= 5) {
+            return "Spring " + year;
+        } else if (month >= 6 && month <= 8) {
+            return "Summer " + year;
+        } else {
+            return "Fall " + year;
+        }
+    }
     
     private Long getCurrentStudentId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
