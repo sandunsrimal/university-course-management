@@ -117,7 +117,7 @@ public class User implements UserDetails {
     @Override
     @Transient
     public boolean isEnabled() {
-        return isActive;
+        return isActive != null && isActive;
     }
     
     // Getters and Setters

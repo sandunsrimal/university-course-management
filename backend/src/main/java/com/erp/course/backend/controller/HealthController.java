@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 public class HealthController {
@@ -34,6 +35,33 @@ public class HealthController {
         response.put("service", "University Course Management Backend");
         response.put("status", "UP");
         response.put("version", "1.0.0");
+        return ResponseEntity.ok(response);
+    }
+
+    // QUICK FIX: Activate all users and ensure they can login
+    @GetMapping("/debug/fix-login")
+    public ResponseEntity<Map<String, Object>> fixLogin() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Get all users
+            List<com.erp.course.backend.entity.User> allUsers = userRepository.findAll();
+            
+            for (com.erp.course.backend.entity.User user : allUsers) {
+                // Make sure isActive is set to true
+                user.setIsActive(true);
+                userRepository.save(user);
+            }
+            
+            response.put("usersFixed", allUsers.size());
+            response.put("adminExists", userRepository.existsByUsername("admin"));
+            response.put("totalUsers", userRepository.count());
+            response.put("status", "SUCCESS");
+            response.put("message", "All users activated and ready for login");
+            
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+        }
         return ResponseEntity.ok(response);
     }
 
@@ -150,6 +178,45 @@ public class HealthController {
             response.put("status", "ERROR");
             response.put("error", e.getMessage());
             response.put("stackTrace", java.util.Arrays.toString(e.getStackTrace()));
+        }
+                 return ResponseEntity.ok(response);
+    }
+
+    // Debug endpoint to test the actual authentication process
+    @GetMapping("/debug/test-auth")
+    public ResponseEntity<Map<String, Object>> testAuth() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Test the UserDetailsService directly
+            com.erp.course.backend.service.UserDetailsServiceImpl userDetailsService = 
+                new com.erp.course.backend.service.UserDetailsServiceImpl();
+            
+            // Check if we can load the user
+            com.erp.course.backend.entity.User user = userRepository.findByUsernameAndIsActiveTrue("admin").orElse(null);
+            if (user != null) {
+                response.put("userFound", true);
+                response.put("userClass", user.getClass().getSimpleName());
+                response.put("userAuthorities", user.getAuthorities().toString());
+                response.put("userEnabled", user.isEnabled());
+                response.put("userAccountNonExpired", user.isAccountNonExpired());
+                response.put("userAccountNonLocked", user.isAccountNonLocked());
+                response.put("userCredentialsNonExpired", user.isCredentialsNonExpired());
+                
+                // Test password encoding directly
+                boolean passwordMatches = passwordEncoder.matches("admin123", user.getPassword());
+                response.put("directPasswordMatch", passwordMatches);
+                
+                response.put("rawPassword", "admin123");
+                response.put("encodedPassword", user.getPassword().substring(0, 20) + "...");
+            } else {
+                response.put("userFound", false);
+            }
+            
+            response.put("status", "SUCCESS");
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+            response.put("stackTrace", e.getStackTrace()[0].toString());
         }
         return ResponseEntity.ok(response);
     }
