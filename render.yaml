@@ -4,7 +4,7 @@ databases:
     plan: free
 
 services:
-  # Backend API Service (Docker-based since Render doesn't support native Java)
+  # Backend API Service
   - type: web
     name: university-backend
     runtime: docker
@@ -14,30 +14,30 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
-      - key: MYSQL_USER
-        fromDatabase:
-          name: university-mysql
-          property: user
-      - key: MYSQL_PASSWORD
-        fromDatabase:
-          name: university-mysql
-          property: password
-      - key: MYSQL_HOST
+      - key: DB_HOST
         fromDatabase:
           name: university-mysql
           property: host
-      - key: MYSQL_PORT
+      - key: DB_PORT
         fromDatabase:
           name: university-mysql
           property: port
-      - key: MYSQL_DATABASE
+      - key: DB_NAME
         fromDatabase:
           name: university-mysql
           property: database
+      - key: DB_USER
+        fromDatabase:
+          name: university-mysql
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: university-mysql
+          property: password
       - key: JWT_SECRET
         generateValue: true
     healthCheckPath: /actuator/health
-    
+
   # Frontend Web Service
   - type: web
     name: university-frontend
@@ -48,4 +48,4 @@ services:
     startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: https://university-backend.onrender.com 
+        value: https://university-backend-ygsl.onrender.com
