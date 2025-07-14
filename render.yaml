@@ -1,6 +1,6 @@
 databases:
-  - name: university-postgres
-    databaseName: university
+  - name: university-mysql
+    databaseName: university_t3cc
     plan: free
 
 services:
@@ -16,23 +16,23 @@ services:
         value: render
       - key: MYSQL_USER
         fromDatabase:
-          name: university-postgres
+          name: university-mysql
           property: user
       - key: MYSQL_PASSWORD
         fromDatabase:
-          name: university-postgres
+          name: university-mysql
           property: password
       - key: MYSQL_HOST
         fromDatabase:
-          name: university-postgres
+          name: university-mysql
           property: host
       - key: MYSQL_PORT
         fromDatabase:
-          name: university-postgres
+          name: university-mysql
           property: port
       - key: MYSQL_DATABASE
         fromDatabase:
-          name: university-postgres
+          name: university-mysql
           property: database
       - key: JWT_SECRET
         generateValue: true
