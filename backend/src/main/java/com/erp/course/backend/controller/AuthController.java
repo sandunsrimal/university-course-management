@@ -28,9 +28,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         try {
+            System.out.println("🔍 Login attempt: " + loginRequest.getUsername());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
             
+            System.out.println("✅ Authentication successful");
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtils.generateJwtToken(authentication);
             
@@ -39,6 +41,8 @@ public class AuthController {
             return ResponseEntity.ok(new JwtResponse(jwt, user.getId(), user.getUsername(), 
                     user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole()));
         } catch (Exception e) {
+            System.out.println("❌ Authentication failed: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(new MessageResponse("Invalid username or password"));
         }
     }
