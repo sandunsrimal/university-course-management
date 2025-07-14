@@ -11,8 +11,6 @@ services:
     plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dependsOn:
-      - university-postgres
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
@@ -39,7 +37,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
     healthCheckPath: /actuator/health
-    startCommand: ./wait-for-db.sh
     
   # Frontend Web Service
   - type: web
