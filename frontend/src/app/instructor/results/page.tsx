@@ -57,8 +57,8 @@ export default function InstructorGradesOverviewPage() {
       const statsPromises = coursesResponse.data.map(async (course: Course) => {
         try {
           const [gradesRes, avgRes] = await Promise.all([
-            api.get(`/api/instructor/courses/${course.id}/grades`),
-            api.get(`/api/instructor/courses/${course.id}/grades/average`)
+            api.get(`/api/instructor/courses/${course.id}/results`),
+            api.get(`/api/instructor/courses/${course.id}/results/average`)
           ]);
           
           const grades = gradesRes.data;
@@ -320,7 +320,7 @@ export default function InstructorGradesOverviewPage() {
                         )}
                         
                         <a
-                          href={`/instructor/courses/${course.id}/grades`}
+                          href={`/instructor/courses/${course.id}/results`}
                           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                         >
                           Manage Grades

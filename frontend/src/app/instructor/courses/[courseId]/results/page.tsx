@@ -20,10 +20,10 @@ import {
 
 interface Grade {
   id: number;
-  gradeValue: number;
-  letterGrade: string;
-  gradeType: string;
-  gradeTypeDisplayName: string;
+  resultValue: number;
+  letterResult: string;
+  resultType: string;
+  resultTypeDisplay: string;
   title: string;
   description: string;
   isReleased: boolean;
@@ -32,7 +32,6 @@ interface Grade {
   updatedAt: string;
   releasedAt: string | null;
   studentId: number;
-  studentNumber: string;
   studentName: string;
   studentEmail: string;
   courseId: number;
@@ -40,6 +39,8 @@ interface Grade {
   courseName: string;
   instructorId: number;
   instructorName: string;
+  instructorEmail: string;
+  resultColor: string;
 }
 
 interface Student {
@@ -104,7 +105,7 @@ export default function InstructorGradesPage() {
     try {
       setLoading(true);
       const [gradesRes, studentsRes, courseRes] = await Promise.all([
-        api.get(`/api/instructor/courses/${courseId}/grades`),
+        api.get(`/api/instructor/courses/${courseId}/results`),
         api.get(`/api/instructor/courses/${courseId}/students`),
         api.get(`/api/instructor/courses/${courseId}`)
       ]);
@@ -122,21 +123,48 @@ export default function InstructorGradesPage() {
 
   const handleAddGrade = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (!gradeForm.gradeValue || gradeForm.gradeValue.trim() === '') {
+      alert('Please enter a grade value');
+      return;
+    }
+    if (!gradeForm.title || gradeForm.title.trim() === '') {
+      alert('Please enter a title');
+      return;
+    }
+    if (!gradeForm.studentId) {
+      alert('Please select a student');
+      return;
+    }
+    
+    const gradeValue = parseFloat(gradeForm.gradeValue);
+    if (isNaN(gradeValue) || gradeValue < 0 || gradeValue > 100) {
+      alert('Please enter a valid grade value between 0 and 100');
+      return;
+    }
+    
     try {
       const gradeData = {
-        ...gradeForm,
-        gradeValue: parseFloat(gradeForm.gradeValue),
+        resultValue: gradeValue,
+        resultType: gradeForm.gradeType,
+        title: gradeForm.title,
+        description: gradeForm.description || '',
         studentId: parseInt(gradeForm.studentId),
-        courseId: parseInt(courseId)
+        courseId: parseInt(courseId),
+        isReleased: gradeForm.isReleased
       };
 
-      await api.post('/api/instructor/grades', gradeData);
+      console.log('Sending grade data:', gradeData);
+      await api.post('/api/instructor/results', gradeData);
       await fetchData();
       setShowAddModal(false);
       resetForm();
-    } catch (err) {
+      alert('Grade added successfully!');
+    } catch (err: any) {
       console.error('Error adding grade:', err);
-      alert('Failed to add grade');
+      const errorMessage = err.response?.data?.message || 'Failed to add grade';
+      alert(errorMessage);
     }
   };
 
@@ -144,28 +172,54 @@ export default function InstructorGradesPage() {
     e.preventDefault();
     if (!editingGrade) return;
 
+    // Validation
+    if (!gradeForm.gradeValue || gradeForm.gradeValue.trim() === '') {
+      alert('Please enter a grade value');
+      return;
+    }
+    if (!gradeForm.title || gradeForm.title.trim() === '') {
+      alert('Please enter a title');
+      return;
+    }
+    if (!gradeForm.studentId) {
+      alert('Please select a student');
+      return;
+    }
+    
+    const gradeValue = parseFloat(gradeForm.gradeValue);
+    if (isNaN(gradeValue) || gradeValue < 0 || gradeValue > 100) {
+      alert('Please enter a valid grade value between 0 and 100');
+      return;
+    }
+
     try {
       const gradeData = {
-        ...gradeForm,
-        gradeValue: parseFloat(gradeForm.gradeValue),
+        resultValue: gradeValue,
+        resultType: gradeForm.gradeType,
+        title: gradeForm.title,
+        description: gradeForm.description || '',
         studentId: parseInt(gradeForm.studentId),
-        courseId: parseInt(courseId)
+        courseId: parseInt(courseId),
+        isReleased: gradeForm.isReleased
       };
 
-      await api.put(`/api/instructor/grades/${editingGrade.id}`, gradeData);
+      console.log('Updating grade data:', gradeData);
+      await api.put(`/api/instructor/results/${editingGrade.id}`, gradeData);
       await fetchData();
       setEditingGrade(null);
       resetForm();
-    } catch (err) {
+      alert('Grade updated successfully!');
+    } catch (err: any) {
       console.error('Error updating grade:', err);
-      alert('Failed to update grade');
+      const errorMessage = err.response?.data?.message || 'Failed to update grade';
+      alert(errorMessage);
     }
   };
 
   const handleDeleteGrade = async (gradeId: number) => {
     if (window.confirm('Are you sure you want to delete this grade?')) {
       try {
-        await api.delete(`/api/instructor/grades/${gradeId}`);
+        await api.delete(`/api/instructor/results/${gradeId}`);
         await fetchData();
       } catch (err) {
         console.error('Error deleting grade:', err);
@@ -177,7 +231,7 @@ export default function InstructorGradesPage() {
   const handleToggleRelease = async (gradeId: number, isReleased: boolean) => {
     try {
       const endpoint = isReleased ? 'unrelease' : 'release';
-      await api.put(`/api/instructor/grades/${gradeId}/${endpoint}`);
+      await api.put(`/api/instructor/results/${gradeId}/${endpoint}`);
       await fetchData();
     } catch (err) {
       console.error('Error toggling release:', err);
@@ -188,7 +242,7 @@ export default function InstructorGradesPage() {
   const handleReleaseAllGrades = async () => {
     if (window.confirm('Are you sure you want to release all unreleased grades for this course?')) {
       try {
-        await api.put(`/api/instructor/courses/${courseId}/grades/release`);
+        await api.put(`/api/instructor/courses/${courseId}/results/release`);
         await fetchData();
       } catch (err) {
         console.error('Error releasing all grades:', err);
@@ -211,8 +265,8 @@ export default function InstructorGradesPage() {
   const openEditModal = (grade: Grade) => {
     setEditingGrade(grade);
     setGradeForm({
-      gradeValue: grade.gradeValue.toString(),
-      gradeType: grade.gradeType,
+      gradeValue: grade.resultValue.toString(),
+      gradeType: grade.resultType,
       title: grade.title,
       description: grade.description || '',
       studentId: grade.studentId.toString(),
@@ -221,7 +275,7 @@ export default function InstructorGradesPage() {
   };
 
   const filteredGrades = grades.filter(grade => {
-    const typeMatch = filterType === 'ALL' || grade.gradeType === filterType;
+    const typeMatch = filterType === 'ALL' || grade.resultType === filterType;
     const studentMatch = filterStudent === 'ALL' || grade.studentId.toString() === filterStudent;
     return typeMatch && studentMatch;
   });
@@ -231,9 +285,9 @@ export default function InstructorGradesPage() {
       case 'studentName':
         return a.studentName.localeCompare(b.studentName);
       case 'gradeValue':
-        return b.gradeValue - a.gradeValue;
+        return b.resultValue - a.resultValue;
       case 'gradeType':
-        return a.gradeType.localeCompare(b.gradeType);
+        return a.resultType.localeCompare(b.resultType);
       case 'createdAt':
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       default:
@@ -407,20 +461,20 @@ export default function InstructorGradesPage() {
                           </div>
                           <div className="ml-3">
                             <div className="text-sm font-medium text-gray-900">{grade.studentName}</div>
-                            <div className="text-sm text-gray-500">{grade.studentNumber}</div>
+                            <div className="text-sm text-gray-500">{grade.studentEmail}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{grade.title}</div>
-                          <div className="text-sm text-gray-500">{grade.gradeTypeDisplayName}</div>
+                          <div className="text-sm text-gray-500">{grade.resultTypeDisplay}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGradeBgColor(grade.gradeValue)} ${getGradeColor(grade.gradeValue)}`}>
-                            {grade.gradeValue}% ({grade.letterGrade})
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGradeBgColor(grade.resultValue)} ${getGradeColor(grade.resultValue)}`}>
+                            {grade.resultValue}% ({grade.letterResult})
                           </span>
                         </div>
                       </td>

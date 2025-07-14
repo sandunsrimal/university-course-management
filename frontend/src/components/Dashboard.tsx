@@ -14,6 +14,7 @@ import {
   CalendarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 
 interface DashboardProps {
   children?: React.ReactNode;
@@ -30,9 +31,10 @@ type NavItem = {
 export default function Dashboard({ children }: DashboardProps) {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'instructors' | 'students' | 'courses' | 'reports' | 'settings'>('overview');
-
+  const router = useRouter();
   const handleLogout = async () => {
     await logout();
+    router.push('/login');
   };
 
   const getNavItems = (): NavItem[] => {

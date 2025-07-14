@@ -40,6 +40,46 @@ public class InstructorController {
     // INSTRUCTOR PROFILE ENDPOINTS
     // ================================
     
+    @GetMapping("/debug/auth")
+    public ResponseEntity<?> debugAuthentication() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) {
+                return ResponseEntity.ok(Map.of("error", "No authentication found"));
+            }
+            
+            String username = authentication.getName();
+            Object principal = authentication.getPrincipal();
+            
+            Map<String, Object> debug = new HashMap<>();
+            debug.put("username", username);
+            debug.put("principalType", principal.getClass().getSimpleName());
+            
+            if (principal instanceof com.erp.course.backend.entity.User) {
+                com.erp.course.backend.entity.User user = (com.erp.course.backend.entity.User) principal;
+                debug.put("userEmail", user.getEmail());
+                debug.put("userRole", user.getRole());
+                debug.put("userFirstName", user.getFirstName());
+                debug.put("userLastName", user.getLastName());
+                
+                // Try to find instructor
+                try {
+                    InstructorResponse instructor = instructorService.getInstructorByEmail(user.getEmail());
+                    debug.put("instructorFound", true);
+                    debug.put("instructorId", instructor.getId());
+                    debug.put("instructorName", instructor.getFirstName() + " " + instructor.getLastName());
+                } catch (Exception e) {
+                    debug.put("instructorFound", false);
+                    debug.put("instructorError", e.getMessage());
+                }
+            }
+            
+            return ResponseEntity.ok(debug);
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("error", e.getMessage()));
+        }
+    }
+    
     @GetMapping("/profile")
     public ResponseEntity<?> getMyProfile() {
         try {
@@ -286,6 +326,8 @@ public class InstructorController {
     public ResponseEntity<?> createResult(@Valid @RequestBody ResultRequest request) {
         try {
             Long instructorId = getCurrentInstructorId();
+            // Set the instructor ID from the authenticated user
+            request.setInstructorId(instructorId);
             ResultResponse result = resultService.createResult(request);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
@@ -298,6 +340,8 @@ public class InstructorController {
     public ResponseEntity<?> updateResult(@PathVariable Long resultId, @Valid @RequestBody ResultRequest request) {
         try {
             Long instructorId = getCurrentInstructorId();
+            // Set the instructor ID from the authenticated user
+            request.setInstructorId(instructorId);
             ResultResponse result = resultService.updateResult(resultId, request);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {

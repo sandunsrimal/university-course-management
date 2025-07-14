@@ -30,7 +30,7 @@ public class ResultRequest {
     @NotNull(message = "Course ID is required")
     private Long courseId;
     
-    @NotNull(message = "Instructor ID is required")
+    // Instructor ID will be set automatically from authenticated user
     private Long instructorId;
     
     private Boolean isReleased = false;

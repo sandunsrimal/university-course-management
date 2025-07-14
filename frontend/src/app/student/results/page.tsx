@@ -15,10 +15,10 @@ import {
 
 interface Grade {
   id: number;
-  gradeValue: number;
-  letterGrade: string;
-  gradeType: string;
-  gradeTypeDisplayName: string;
+  resultValue: number;
+  letterResult: string;
+  resultType: string;
+  resultTypeDisplay: string;
   title: string;
   description: string;
   isReleased: boolean;
@@ -27,7 +27,6 @@ interface Grade {
   updatedAt: string;
   releasedAt: string | null;
   studentId: number;
-  studentNumber: string;
   studentName: string;
   studentEmail: string;
   courseId: number;
@@ -73,7 +72,7 @@ export default function StudentGradesPage() {
   const fetchGrades = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/student/grades');
+      const response = await api.get('/api/student/results');
       setGrades(response.data);
       calculateStatistics(response.data);
     } catch (err) {
@@ -91,7 +90,7 @@ export default function StudentGradesPage() {
     }
 
     const totalGrades = gradesData.length;
-    const averageGrade = gradesData.reduce((sum, grade) => sum + grade.gradeValue, 0) / totalGrades;
+    const averageGrade = gradesData.reduce((sum, grade) => sum + grade.resultValue, 0) / totalGrades;
     
     const gradesByType: { [key: string]: number } = {};
     const gradesByCourse: { [key: string]: number } = {};
@@ -99,7 +98,7 @@ export default function StudentGradesPage() {
 
     gradesData.forEach(grade => {
       // Count by type
-      const typeLabel = grade.gradeTypeDisplayName;
+      const typeLabel = grade.resultTypeDisplay;
       gradesByType[typeLabel] = (gradesByType[typeLabel] || 0) + 1;
 
       // Count by course
@@ -107,7 +106,7 @@ export default function StudentGradesPage() {
       gradesByCourse[courseLabel] = (gradesByCourse[courseLabel] || 0) + 1;
 
       // Count by letter grade
-      letterGradeDistribution[grade.letterGrade] = (letterGradeDistribution[grade.letterGrade] || 0) + 1;
+      letterGradeDistribution[grade.letterResult] = (letterGradeDistribution[grade.letterResult] || 0) + 1;
     });
 
     setStatistics({
@@ -120,7 +119,7 @@ export default function StudentGradesPage() {
   };
 
   const filteredGrades = grades.filter(grade => {
-    const typeMatch = filterType === 'ALL' || grade.gradeType === filterType;
+    const typeMatch = filterType === 'ALL' || grade.resultType === filterType;
     const courseMatch = filterCourse === 'ALL' || grade.courseId.toString() === filterCourse;
     return typeMatch && courseMatch;
   });
@@ -128,11 +127,11 @@ export default function StudentGradesPage() {
   const sortedGrades = [...filteredGrades].sort((a, b) => {
     switch (sortBy) {
       case 'gradeValue':
-        return b.gradeValue - a.gradeValue;
+        return b.resultValue - a.resultValue;
       case 'courseName':
         return a.courseName.localeCompare(b.courseName);
       case 'gradeType':
-        return a.gradeType.localeCompare(b.gradeType);
+        return a.resultType.localeCompare(b.resultType);
       case 'createdAt':
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       default:
@@ -140,24 +139,24 @@ export default function StudentGradesPage() {
     }
   });
 
-  const getGradeColor = (gradeValue: number) => {
-    if (gradeValue >= 90) return 'text-green-600';
-    if (gradeValue >= 80) return 'text-blue-600';
-    if (gradeValue >= 70) return 'text-yellow-600';
-    if (gradeValue >= 60) return 'text-orange-600';
+  const getGradeColor = (resultValue: number) => {
+    if (resultValue >= 90) return 'text-green-600';
+    if (resultValue >= 80) return 'text-blue-600';
+    if (resultValue >= 70) return 'text-yellow-600';
+    if (resultValue >= 60) return 'text-orange-600';
     return 'text-red-600';
   };
 
-  const getGradeBgColor = (gradeValue: number) => {
-    if (gradeValue >= 90) return 'bg-green-100';
-    if (gradeValue >= 80) return 'bg-blue-100';
-    if (gradeValue >= 70) return 'bg-yellow-100';
-    if (gradeValue >= 60) return 'bg-orange-100';
+  const getGradeBgColor = (resultValue: number) => {
+    if (resultValue >= 90) return 'bg-green-100';
+    if (resultValue >= 80) return 'bg-blue-100';
+    if (resultValue >= 70) return 'bg-yellow-100';
+    if (resultValue >= 60) return 'bg-orange-100';
     return 'bg-red-100';
   };
 
-  const getLetterGradeColor = (letterGrade: string) => {
-    switch (letterGrade) {
+  const getLetterGradeColor = (letterResult: string) => {
+    switch (letterResult) {
       case 'A': return 'bg-green-100 text-green-800';
       case 'B': return 'bg-blue-100 text-blue-800';
       case 'C': return 'bg-yellow-100 text-yellow-800';
@@ -370,7 +369,7 @@ export default function StudentGradesPage() {
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">{grade.title}</h3>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          {grade.gradeTypeDisplayName}
+                          {grade.resultTypeDisplay}
                         </span>
                       </div>
                       
@@ -396,11 +395,11 @@ export default function StudentGradesPage() {
                     
                     <div className="flex items-center space-x-3">
                       <div className="text-right">
-                        <div className={`text-2xl font-bold ${getGradeColor(grade.gradeValue)}`}>
-                          {grade.gradeValue}%
+                        <div className={`text-2xl font-bold ${getGradeColor(grade.resultValue)}`}>
+                          {grade.resultValue}%
                         </div>
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLetterGradeColor(grade.letterGrade)}`}>
-                          {grade.letterGrade}
+                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLetterGradeColor(grade.letterResult)}`}>
+                          {grade.letterResult}
                         </div>
                       </div>
                     </div>
