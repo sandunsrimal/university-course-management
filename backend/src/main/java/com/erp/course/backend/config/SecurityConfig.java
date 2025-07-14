@@ -78,7 +78,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Allow specific origins for production and development
         configuration.setAllowedOrigins(Arrays.asList(
-            "https://university-frontend.onrender.com",
+            "https://university-frontend-r3rq.onrender.com",
             "http://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
