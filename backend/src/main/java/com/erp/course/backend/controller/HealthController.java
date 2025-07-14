@@ -270,4 +270,111 @@ public class HealthController {
         }
         return ResponseEntity.ok(response);
     }
+
+    // COMPREHENSIVE TEST: Try different scenarios to find the exact issue
+    @GetMapping("/debug/test-everything")
+    public ResponseEntity<Map<String, Object>> testEverything() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Test 1: Create a simple user with simple password
+            com.erp.course.backend.entity.User testUser = new com.erp.course.backend.entity.User();
+            testUser.setUsername("test");
+            testUser.setFirstName("Test");
+            testUser.setLastName("User");
+            testUser.setEmail("test@test.com");
+            testUser.setPassword(passwordEncoder.encode("123"));
+            testUser.setRole(com.erp.course.backend.entity.Role.ADMIN);
+            testUser.setIsActive(true);
+            userRepository.save(testUser);
+            
+            // Test 2: Check admin user from database
+            com.erp.course.backend.entity.User adminFromDb = userRepository.findByUsernameAndIsActiveTrue("admin").orElse(null);
+            
+            Map<String, Object> adminTest = new HashMap<>();
+            if (adminFromDb != null) {
+                adminTest.put("exists", true);
+                adminTest.put("username", adminFromDb.getUsername());
+                adminTest.put("isActive", adminFromDb.getIsActive());
+                adminTest.put("isEnabled", adminFromDb.isEnabled());
+                adminTest.put("role", adminFromDb.getRole().toString());
+                adminTest.put("authorities", adminFromDb.getAuthorities().toString());
+                
+                // Test password encoding multiple ways
+                adminTest.put("password_matches_admin123", passwordEncoder.matches("admin123", adminFromDb.getPassword()));
+                adminTest.put("password_raw_length", adminFromDb.getPassword().length());
+                adminTest.put("password_starts_with", adminFromDb.getPassword().substring(0, 10));
+                
+                // Test with different password formats
+                adminTest.put("password_matches_Admin123", passwordEncoder.matches("Admin123", adminFromDb.getPassword()));
+                adminTest.put("password_matches_ADMIN123", passwordEncoder.matches("ADMIN123", adminFromDb.getPassword()));
+            } else {
+                adminTest.put("exists", false);
+            }
+            
+            // Test 3: Check test user
+            com.erp.course.backend.entity.User testFromDb = userRepository.findByUsernameAndIsActiveTrue("test").orElse(null);
+            Map<String, Object> testUserTest = new HashMap<>();
+            if (testFromDb != null) {
+                testUserTest.put("exists", true);
+                testUserTest.put("password_matches_123", passwordEncoder.matches("123", testFromDb.getPassword()));
+                testUserTest.put("isEnabled", testFromDb.isEnabled());
+            } else {
+                testUserTest.put("exists", false);
+            }
+            
+            // Test 4: Environment checks
+            Map<String, Object> envTest = new HashMap<>();
+            envTest.put("active_profile", System.getProperty("spring.profiles.active"));
+            envTest.put("db_url_contains", System.getenv("DB_HOST") != null ? "postgres_host_set" : "no_db_host");
+            
+            // Test 5: Database info
+            Map<String, Object> dbTest = new HashMap<>();
+            dbTest.put("total_users", userRepository.count());
+            dbTest.put("admin_exists_by_username", userRepository.existsByUsername("admin"));
+            
+            response.put("testUser", testUserTest);
+            response.put("adminUser", adminTest);
+            response.put("environment", envTest);
+            response.put("database", dbTest);
+            response.put("status", "SUCCESS");
+            
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+            response.put("stackTrace", e.getStackTrace()[0].toString());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    // TEST LOGIN: Try login with simple test user
+    @GetMapping("/debug/test-simple-login")
+    public ResponseEntity<Map<String, Object>> testSimpleLogin() {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Create or update simple test user
+            com.erp.course.backend.entity.User simple = userRepository.findByUsername("simple").orElse(null);
+            if (simple == null) {
+                simple = new com.erp.course.backend.entity.User();
+                simple.setUsername("simple");
+                simple.setFirstName("Simple");
+                simple.setLastName("User");
+                simple.setEmail("simple@test.com");
+                simple.setRole(com.erp.course.backend.entity.Role.ADMIN);
+            }
+            simple.setPassword(passwordEncoder.encode("pass"));
+            simple.setIsActive(true);
+            userRepository.save(simple);
+            
+            response.put("simpleUserCreated", true);
+            response.put("username", "simple");
+            response.put("password", "pass");
+            response.put("message", "Try login with: simple/pass");
+            response.put("status", "SUCCESS");
+            
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
 } 
